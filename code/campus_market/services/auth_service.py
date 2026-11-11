@@ -91,7 +91,8 @@ class AuthService(BaseService):
         for token, active_user_id in tuple(self._sessions.items()):
             if active_user_id == user_id:
                 self._sessions.pop(token, None)
-        return self.user(user_id)
+        user.is_active = False
+        return user
 
     def list_users(self, admin_id: str, role: Role | str | None = None) -> list[User]:
         self.require_role(admin_id, Role.ADMIN)
@@ -100,3 +101,4 @@ class AuthService(BaseService):
             return [self.context.users._from_row(row) for row in rows]
         actual_role = role if isinstance(role, Role) else Role(str(role).upper())
         return self.context.users.list_by_role(actual_role)
+
