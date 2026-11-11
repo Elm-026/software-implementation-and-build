@@ -125,13 +125,20 @@ class Database:
 
     def __init__(self, path: str | Path = "campus_market.sqlite3") -> None:
         self.path = Path(path)
-        if str(self.path) != ":memory:":
+        self._memory_uri: str | None = None
+        self._memory_anchor: sqlite3.Connection | None = None
+        if str(self.path) == ":memory:":
+            self._memory_uri = f"file:campus_market_{id(self)}?mode=memory&cache=shared"
+            self._memory_anchor = sqlite3.connect(self._memory_uri, uri=True, check_same_thread=False)
+        else:
             self.path.parent.mkdir(parents=True, exist_ok=True)
         self.initialize()
 
     def connect(self) -> sqlite3.Connection:
+        target = self._memory_uri or str(self.path)
         connection = sqlite3.connect(
-            self.path if str(self.path) != ":memory:" else ":memory:",
+            target,
+            uri=self._memory_uri is not None,
             timeout=10,
             isolation_level=None,
             check_same_thread=False,
@@ -142,6 +149,12 @@ class Database:
         if str(self.path) != ":memory:":
             connection.execute("PRAGMA journal_mode = WAL")
         return connection
+
+    def close(self) -> None:
+        """释放共享内存数据库的锚点连接。文件数据库无需额外清理。"""
+        if self._memory_anchor is not None:
+            self._memory_anchor.close()
+            self._memory_anchor = None
 
     def initialize(self) -> None:
         connection = self.connect()
