@@ -1,0 +1,58 @@
+@startuml
+skinparam componentStyle rectangle
+skinparam shadowing false
+skinparam linetype ortho
+title 二手交易系统 - UML 组件图
+actor 买家 as buyer
+actor 卖家 as seller
+actor 管理员 as admin
+package "客户端" {
+  [买家 Web 工作区] as buyer_ui
+  [卖家 Web 工作区] as seller_ui
+  [管理员 Web 工作区] as admin_ui
+}
+package "应用服务层" {
+  [认证与权限服务] as auth
+  [商品目录服务] as catalog
+  [审核服务] as review
+  [预约与交易服务] as trade
+  [统计与日志服务] as audit
+}
+package "基础设施层" {
+  database "主数据库" as db
+  [缓存/查询索引] as cache
+  [备份与恢复任务] as backup
+}
+buyer --> buyer_ui
+seller --> seller_ui
+admin --> admin_ui
+buyer_ui --> auth : 登录/令牌
+seller_ui --> auth
+admin_ui --> auth
+auth --> db : 用户/角色
+buyer_ui --> catalog : 查询商品
+seller_ui --> catalog : 草稿/版本
+catalog --> db
+catalog --> cache : 读写索引
+seller_ui --> review : 提交审核
+admin_ui --> review : 通过/驳回
+review --> db
+buyer_ui --> trade : 预约/取消
+seller_ui --> trade : 确认预约
+buyer_ui --> trade : 确认收货
+trade --> db : 事务+原子状态更新
+trade --> audit : 关键操作事件
+review --> audit
+auth --> audit
+catalog --> audit
+admin_ui --> audit : 日志/统计查询
+audit --> db
+backup --> db : 每日全量/每小时增量
+note right of trade
+  以 product.version 和唯一有效预约约束
+  处理并发与旧页面写入；幂等记录与业务写入同事务。
+end note
+note bottom of db
+  数据关系：User, Product, Reservation, Transaction, AuditLog
+end note
+@enduml

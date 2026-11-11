@@ -1,0 +1,44 @@
+@startuml
+skinparam shadowing false
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+title 二手交易系统 - UML 时序图（并发预约与幂等）
+actor 买家A as A
+actor 买家B as B
+participant "买家 Web 客户端" as UI
+participant "预约与交易服务" as S
+participant "幂等记录表" as I
+participant "主数据库" as DB
+participant "审计日志服务" as L
+A -> UI : 点击预约(productId, key-A)
+UI -> S : POST /reservations
+S -> I : 查询 key-A
+alt 首次请求
+  I --> S : 无记录
+  S -> DB : BEGIN
+  S -> DB : UPDATE product SET status=RESERVED, version=version+1\nWHERE id=? AND status=PUBLISHED
+  alt 更新行数=1
+    S -> DB : INSERT reservation(A, ACTIVE)
+    S -> DB : COMMIT
+    S -> I : 保存 key-A -> reservationId
+    S -> L : 记录预约成功
+    S --> UI : 201 reservationId
+  else 更新行数=0
+    S -> DB : ROLLBACK
+    S -> I : 保存 key-A -> PRODUCT_ALREADY_RESERVED
+    S --> UI : 409 已被预约
+  end
+else 重复请求
+  I --> S : 返回首次结果
+  S --> UI : 返回相同 reservationId/状态
+end
+B -> S : POST /reservations(productId, key-B)
+S -> DB : 原子更新商品状态
+DB --> S : 更新行数=0（已预约）
+S -> I : 保存 key-B -> PRODUCT_ALREADY_RESERVED
+S --> B : 409 已被预约
+note over S,DB
+  数据库条件更新 + 唯一有效预约约束，保证同一商品最多一条有效预约；
+  version 校验阻止旧页面覆盖新状态。
+end note
+@enduml

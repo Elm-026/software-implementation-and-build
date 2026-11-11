@@ -1,0 +1,66 @@
+@startuml
+skinparam shadowing false
+skinparam activity {
+  BackgroundColor #EEF5FF
+  BorderColor #3B6EA8
+  DiamondBackgroundColor #FFF4CC
+  DiamondBorderColor #B88900
+}
+title 二手交易系统 - UML 活动图（发布与预约主流程）
+start
+partition 卖家 {
+  :填写商品信息;
+  :保存商品草稿;
+  if (必填字段和金额合法？) then (是)
+    :提交审核（幂等键）;
+  else (否)
+    :提示错误并保留草稿;
+    stop
+  endif
+}
+partition 系统 {
+  :创建审核任务;
+  :商品状态 = 待审核;
+}
+partition 管理员 {
+  :查看待审核商品;
+  if (审核通过？) then (通过)
+    :发布商品;
+  else (驳回)
+    :填写驳回原因;
+    :商品状态 = 已驳回;
+    stop
+  endif
+}
+partition 买家 {
+  :按条件查询已发布商品;
+  :打开商品详情;
+  :提交预约（幂等键）;
+}
+partition 系统 {
+  if (原子更新成功？) then (成功)
+    :创建唯一有效预约;
+    :商品状态 = 已预约;
+    :通知卖家;
+  else (失败)
+    :返回“商品已被预约”;
+    stop
+  endif
+}
+partition 卖家 {
+  :确认预约;
+}
+partition 系统 {
+  :创建交易记录;
+  :商品状态 = 交易中;
+}
+partition 买家 {
+  :线下交付后确认收货;
+}
+partition 系统 {
+  :交易状态 = 已完成;
+  :商品状态 = 已完成;
+  :写入审计日志;
+}
+stop
+@enduml

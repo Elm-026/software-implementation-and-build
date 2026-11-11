@@ -1,0 +1,151 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam linetype ortho
+hide circle
+title 二手交易系统 - UML 类图
+abstract class User {
+  +userId: UUID
+  +email: String
+  +passwordHash: String
+  +role: Role
+  +register()
+  +login()
+}
+class Buyer {
+  +searchProducts(criteria)
+  +createReservation(productId, idempotencyKey)
+  +cancelReservation(reservationId, version)
+  +confirmReceipt(transactionId, version)
+}
+class Seller {
+  +saveDraft(product)
+  +submitForReview(productId, idempotencyKey)
+  +editPublished(productId, version)
+  +confirmReservation(reservationId, idempotencyKey)
+}
+class Admin {
+  +review(productId, decision, reason)
+  +forceUnlist(productId, reason)
+  +queryAuditLogs(filter)
+  +queryStatistics(filter)
+}
+User <|-- Buyer
+User <|-- Seller
+User <|-- Admin
+enum Role {
+  BUYER
+  SELLER
+  ADMIN
+}
+enum ProductStatus {
+  DRAFT
+  PENDING_REVIEW
+  PUBLISHED
+  RESERVED
+  IN_TRANSACTION
+  COMPLETED
+  REJECTED
+  UNLISTED
+  VIOLATION
+}
+enum ReservationStatus {
+  ACTIVE
+  CANCELLED
+  CONFIRMED
+  COMPLETED
+}
+enum TransactionStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+class Product {
+  +productId: UUID
+  +sellerId: UUID
+  +title: String
+  +description: Text
+  +category: String
+  +price: Decimal
+  +condition: String
+  +city: String
+  +status: ProductStatus
+  +version: Long
+  +saveDraft()
+  +submitReview()
+  +publish()
+  +unlist()
+}
+class ProductVersion {
+  +versionId: UUID
+  +productId: UUID
+  +versionNo: Long
+  +snapshot: JSON
+  +status: ProductStatus
+  +createdAt: DateTime
+}
+class ReviewTask {
+  +taskId: UUID
+  +productId: UUID
+  +reviewerId: UUID
+  +decision: String
+  +reason: String
+  +status: String
+}
+class Reservation {
+  +reservationId: UUID
+  +productId: UUID
+  +buyerId: UUID
+  +status: ReservationStatus
+  +createdAt: DateTime
+  +version: Long
+  +cancel(version)
+  +confirm(version)
+}
+class Transaction {
+  +transactionId: UUID
+  +reservationId: UUID
+  +productId: UUID
+  +buyerId: UUID
+  +sellerId: UUID
+  +status: TransactionStatus
+  +confirmReceipt(version)
+}
+class AuditLog {
+  +logId: UUID
+  +actorId: UUID
+  +role: Role
+  +action: String
+  +objectId: UUID
+  +beforeState: JSON
+  +afterState: JSON
+  +requestId: String
+  +createdAt: DateTime
+}
+class IdempotencyRecord {
+  +key: String
+  +actorId: UUID
+  +operation: String
+  +requestHash: String
+  +resultRef: UUID
+  +createdAt: DateTime
+}
+Seller "1" -- "0..*" Product : owns
+Product "1" -- "0..*" ProductVersion : versions
+Product "1" -- "0..1" ReviewTask : pending review
+Buyer "1" -- "0..*" Reservation : creates
+Product "1" -- "0..1" Reservation : one active reservation
+Reservation "1" -- "0..1" Transaction : confirmed as
+Seller "1" -- "0..*" Transaction : delivers
+Buyer "1" -- "0..*" Transaction : receives
+User "1" -- "0..*" AuditLog : produces
+User "1" -- "0..*" IdempotencyRecord : owns
+Admin ..> ReviewTask : decides
+Admin ..> AuditLog : queries
+note right of Product
+  写操作必须校验 version；预约使用原子状态更新，
+  保证每个商品至多一条有效预约。
+end note
+note bottom of IdempotencyRecord
+  提交审核、保存草稿、预约、取消、确认均支持幂等键。
+end note
+@enduml
