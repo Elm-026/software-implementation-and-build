@@ -124,11 +124,13 @@ class ReviewRepository:
     def __init__(self, database: Database) -> None:
         self.database = database
 
-    def create(self, task: ReviewTask) -> None:
-        self.database.execute(
-            "INSERT INTO review_tasks(task_id,product_id,reviewer_id,decision,reason,status,created_at,reviewed_at) VALUES(?,?,?,?,?,?,?,?)",
-            (task.task_id, task.product_id, task.reviewer_id, task.decision, task.reason, task.status, task.created_at, task.reviewed_at),
-        )
+    def create(self, task: ReviewTask, connection: sqlite3.Connection | None = None) -> None:
+        sql = "INSERT INTO review_tasks(task_id,product_id,reviewer_id,decision,reason,status,created_at,reviewed_at) VALUES(?,?,?,?,?,?,?,?)"
+        values = (task.task_id, task.product_id, task.reviewer_id, task.decision, task.reason, task.status, task.created_at, task.reviewed_at)
+        if connection is None:
+            self.database.execute(sql, values)
+        else:
+            connection.execute(sql, values)
 
     def get(self, task_id: str) -> ReviewTask | None:
         row = self.database.fetch_one("SELECT * FROM review_tasks WHERE task_id = ?", (task_id,))
