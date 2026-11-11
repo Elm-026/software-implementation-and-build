@@ -31,7 +31,7 @@ class LoginView(ttk.Frame):
         ttk.Label(self, text="密码").grid(row=2, column=0, sticky="w", pady=5)
         ttk.Entry(self, textvariable=self.password, show="*", width=34).grid(row=2, column=1, sticky="ew", pady=5)
         ttk.Label(self, text="注册角色").grid(row=3, column=0, sticky="w", pady=5)
-        ttk.Combobox(self, textvariable=self.role, values=[role.value for role in Role if role != Role.ADMIN], state="readonly", width=31).grid(row=3, column=1, sticky="ew", pady=5)
+        ttk.Combobox(self, textvariable=self.role, values=[role.value for role in Role], state="readonly", width=31).grid(row=3, column=1, sticky="ew", pady=5)
         ttk.Label(self, text="显示名称").grid(row=4, column=0, sticky="w", pady=5)
         ttk.Entry(self, textvariable=self.display_name, width=34).grid(row=4, column=1, sticky="ew", pady=5)
         ttk.Label(self, text="联系方式").grid(row=5, column=0, sticky="w", pady=5)
@@ -58,3 +58,4 @@ class LoginView(ttk.Frame):
             messagebox.showerror("注册失败", str(exc), parent=self)
             return
         self.on_login(session)
+
