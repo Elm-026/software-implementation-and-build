@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="校园二手交易系统，游客先逛一逛，需要预约或发布时再登录。">
+  <title>拾光集市 · 校园二手交易</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="返回拾光集市首页">
+        <span class="brand-mark">拾</span>
+        <span><strong>拾光集市</strong><small>Campus resale, made easy</small></span>
+      </a>
+      <nav class="main-nav" aria-label="主导航">
+        <a class="nav-link active" href="#browse">逛一逛</a>
+        <a class="nav-link" href="#how-it-works">交易流程</a>
+        <a class="nav-link" href="#about">关于集市</a>
+      </nav>
+      <div class="top-actions">
+        <button class="ghost-button" id="sell-button" type="button"><span class="plus">＋</span> 发布闲置</button>
+        <button class="profile-button" id="profile-button" type="button">登录 / 注册</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" id="browse">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="eyebrow-dot"></span> 校园里的小而美交易场</div>
+          <h1>把闲置，交给<br><em>下一位同学。</em></h1>
+          <p>课本、数码、宿舍好物和兴趣装备，先逛一圈再决定。游客也能直接浏览，喜欢的东西再登录预约。</p>
+          <div class="hero-notes"><span><b>01</b> 同校交易更方便</span><span><b>02</b> 状态透明可追踪</span><span><b>03</b> 预约成功再联系</span></div>
+        </div>
+        <div class="hero-aside" aria-label="今日集市数据">
+          <div class="hero-ticket"><div class="ticket-top"><span>今日集市</span><span class="live-dot">LIVE</span></div><strong id="hero-count">—</strong><span>件好物正在等待下一位主人</span><div class="ticket-line"></div><div class="ticket-foot"><span>更新于刚刚</span><span>南京 · 校园内</span></div></div>
+          <div class="hero-sticker sticker-coral">轻一点<br>生活</div><div class="hero-sticker sticker-mint">闲置<br>再出发</div>
+        </div>
+      </section>
+
+      <section class="search-panel" aria-label="商品搜索">
+        <div class="search-main"><span class="search-icon">⌕</span><input id="keyword" type="search" placeholder="搜教材、耳机、台灯……" autocomplete="off"></div>
+        <label class="filter-field"><span>分类</span><select id="category"><option value="">全部分类</option><option>教材</option><option>数码</option><option>生活</option><option>兴趣</option><option>服饰</option></select></label>
+        <label class="filter-field price-field"><span>价格区间</span><div><input id="min-price" inputmode="decimal" placeholder="最低"><i>—</i><input id="max-price" inputmode="decimal" placeholder="最高"></div></label>
+        <label class="filter-field"><span>排序</span><select id="sort"><option value="updated_at">最新发布</option><option value="price">价格优先</option></select></label>
+        <button class="search-button" id="search-button" type="button">开始寻找 <span>→</span></button>
+      </section>
+
+      <section class="category-strip" aria-label="热门分类"><span class="strip-label">大家都在看</span><button class="category-pill active" data-category="">全部</button><button class="category-pill" data-category="教材">教材资料 <span>✦</span></button><button class="category-pill" data-category="数码">数码好物</button><button class="category-pill" data-category="生活">宿舍生活</button><button class="category-pill" data-category="兴趣">兴趣装备</button><span class="category-tip">不登录也能浏览完整商品信息</span></section>
+
+      <section class="catalog-section"><div class="section-heading"><div><span class="section-kicker">MARKETPLACE</span><h2>附近值得逛的好物</h2></div><div class="result-meta"><span id="result-count">正在加载</span><button class="refresh-button" id="refresh-button" type="button" aria-label="刷新商品">↻</button></div></div>
+        <div class="catalog-layout"><aside class="side-note"><div class="side-note-card pale-yellow"><span class="note-icon">↗</span><strong>先看，再决定</strong><p>详情页会展示成色、城市和卖家描述，预约前把信息看清楚。</p></div><div class="side-note-card pale-blue"><span class="note-icon">♡</span><strong>收藏你的心动</strong><p>现在先浏览，遇到喜欢的商品，登录后就能马上预约。</p></div></aside><div class="catalog-content"><div class="product-grid" id="product-grid"></div><div class="empty-state hidden" id="empty-state"><span>⌁</span><strong>还没有找到合适的商品</strong><p>换个关键词，或者放宽一点价格范围试试。</p></div></div></div>
+      </section>
+
+      <section class="steps-section" id="how-it-works"><div class="section-heading compact"><div><span class="section-kicker">HOW IT WORKS</span><h2>三步，完成一次轻松交易</h2></div><p>校园里的交易不需要复杂流程，<br>把时间留给真正重要的事情。</p></div><div class="steps-grid"><div class="step-card"><span class="step-number">01</span><span class="step-icon">⌕</span><h3>浏览和比较</h3><p>游客直接查看商品详情，按分类、关键词和价格找到心仪好物。</p></div><div class="step-card"><span class="step-number">02</span><span class="step-icon">♡</span><h3>登录后预约</h3><p>确定想要时再登录，点击预约，卖家确认后进入交易流程。</p></div><div class="step-card"><span class="step-number">03</span><span class="step-icon">↗</span><h3>当面完成交接</h3><p>线下交付后确认收货，商品和交易状态会同步完成。</p></div></div></section>
+      <section class="cta-section" id="about"><div><span class="section-kicker">READY WHEN YOU ARE</span><h2>你的闲置，也许正是<br>别人的刚刚好。</h2></div><button class="dark-button" id="cta-sell" type="button">发布一件闲置 <span>→</span></button></section>
+    </main>
+    <footer class="footer"><div class="brand footer-brand"><span class="brand-mark">拾</span><span><strong>拾光集市</strong><small>校园二手交易系统</small></span></div><span>让每一件物品，都有下一段故事。</span><span>© 2026 Campus Market</span></footer>
+  </div>
+
+  <div class="modal-backdrop hidden" id="detail-modal"><div class="modal detail-modal" role="dialog" aria-modal="true" aria-labelledby="detail-title"><button class="modal-close" data-close="detail-modal" aria-label="关闭">×</button><div class="detail-art" id="detail-art"></div><div class="detail-body"><div class="detail-tag" id="detail-category">分类</div><h2 id="detail-title">商品详情</h2><p class="detail-price" id="detail-price">¥0.00</p><p class="detail-description" id="detail-description"></p><div class="detail-facts"><span><small>成色</small><b id="detail-condition">—</b></span><span><small>所在城市</small><b id="detail-city">—</b></span><span><small>商品状态</small><b id="detail-status">—</b></span></div><div class="detail-actions"><button class="dark-button" id="detail-reserve" type="button">登录后预约 <span>→</span></button><span class="detail-tip">预约成功后，卖家会尽快确认</span></div></div></div></div>
+
+  <div class="modal-backdrop hidden" id="auth-modal"><div class="modal auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title"><button class="modal-close" data-close="auth-modal" aria-label="关闭">×</button><div class="auth-intro"><span class="brand-mark">拾</span><span class="section-kicker">WELCOME BACK</span><h2 id="auth-title">加入拾光集市</h2><p>浏览不需要登录，预约和发布时再来就好。</p></div><div class="auth-tabs"><button class="auth-tab active" data-auth-mode="login">登录</button><button class="auth-tab" data-auth-mode="register">注册</button></div><form id="auth-form"><label>邮箱<input id="auth-email" type="email" required placeholder="you@campus.edu.cn"></label><label>密码<input id="auth-password" type="password" required minlength="8" placeholder="至少 8 位字符"></label><div class="register-only hidden"><label>显示名称<input id="auth-name" type="text" placeholder="怎么称呼你"></label><label>角色<select id="auth-role"><option value="BUYER">我是买家</option><option value="SELLER">我是卖家</option></select></label><label>联系方式<input id="auth-phone" type="text" placeholder="预约成功后方便联系"></label></div><button class="full-button" type="submit" id="auth-submit">登录并继续 <span>→</span></button><p class="form-hint" id="auth-hint">首次使用？切换到注册，30 秒就能开始。</p></form></div></div>
+
+  <div class="modal-backdrop hidden" id="sell-modal"><div class="modal sell-modal" role="dialog" aria-modal="true" aria-labelledby="sell-title"><button class="modal-close" data-close="sell-modal" aria-label="关闭">×</button><div class="modal-heading"><span class="section-kicker">LIST SOMETHING</span><h2 id="sell-title">发布一件闲置</h2><p>写清楚一点，下一位同学会更快找到它。</p></div><form id="sell-form" class="sell-form"><label>商品标题<input id="sell-title-input" type="text" maxlength="120" required placeholder="例如：高等数学教材 · 少量笔记"></label><label>商品描述<textarea id="sell-description" rows="4" maxlength="5000" required placeholder="描述成色、使用情况和交易方式"></textarea></label><div class="form-row"><label>分类<select id="sell-category"><option>教材</option><option>数码</option><option>生活</option><option>兴趣</option><option>服饰</option></select></label><label>价格<input id="sell-price" type="number" min="0" step="0.01" required placeholder="0.00"></label></div><div class="form-row"><label>成色<input id="sell-condition" required placeholder="九成新"></label><label>城市<input id="sell-city" required value="南京"></label></div><label>联系方式<input id="sell-contact" required placeholder="微信号或手机号"></label><button class="full-button" type="submit">保存并提交审核 <span>→</span></button></form></div></div>
+  <div class="toast hidden" id="toast" role="status"></div>
+  <script src="/app.js"></script>
+</body>
+</html>
