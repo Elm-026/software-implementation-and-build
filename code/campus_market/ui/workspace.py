@@ -8,7 +8,7 @@ from tkinter import messagebox, ttk
 
 from ..domain import ProductStatus, Role
 from ..services import ConflictError, PermissionDenied, ServiceError
-from .theme import BLUE, CANVAS, LINE, MUTED, NAVY, PAPER, SOFT_BLUE, TEXT, card
+from .theme import BLUE, CANVAS, LINE, MUTED, NAVY, PAPER, SOFT_BLUE, SOFT_MINT, TEXT, card
 
 
 class Workspace(ttk.Frame):
@@ -68,6 +68,8 @@ class Workspace(ttk.Frame):
         tab = ttk.Frame(self.notebook, style="Panel.TFrame", padding=22)
         self.notebook.add(tab, text="浏览商品")
         self._register_tab("browse", "⌂  浏览商品", tab)
+        self.selected_product_id = None
+        self.selected_card = None
         ttk.Label(tab, text="发现校园里的好物", style="Heading.TLabel").pack(anchor="w")
         ttk.Label(tab, text="搜索商品、比较价格，找到下一件刚刚好。", style="Muted.TLabel").pack(anchor="w", pady=(4, 16))
         query = card(tab, 14)
@@ -76,12 +78,22 @@ class Workspace(ttk.Frame):
         category = tk.StringVar()
         minimum = tk.StringVar()
         maximum = tk.StringVar()
-        for label, variable in (("关键词", keyword), ("分类", category), ("最低价", minimum), ("最高价", maximum)):
+        ttk.Label(query, text="关键词", style="Muted.TLabel").pack(side="left", padx=(0, 4))
+        ttk.Entry(query, textvariable=keyword, width=15, style="App.TEntry").pack(side="left", padx=(0, 10))
+        ttk.Label(query, text="分类", style="Muted.TLabel").pack(side="left", padx=(0, 4))
+        ttk.Combobox(query, textvariable=category, values=["", "教材", "数码", "生活", "兴趣", "服饰"], width=10, style="App.TCombobox").pack(side="left", padx=(0, 10))
+        for label, variable in (("最低价", minimum), ("最高价", maximum)):
             ttk.Label(query, text=label, style="Muted.TLabel").pack(side="left", padx=(0, 4))
-            ttk.Entry(query, textvariable=variable, width=12, style="App.TEntry").pack(side="left", padx=(0, 8))
+            ttk.Entry(query, textvariable=variable, width=9, style="App.TEntry").pack(side="left", padx=(0, 10))
         ttk.Button(query, text="查询商品", style="Primary.TButton", command=lambda: self._search_buyer(keyword.get(), category.get(), minimum.get(), maximum.get())).pack(side="left", padx=(8, 0))
-        self.buyer_list = self._listbox(tab, 15)
-        self.buyer_list.pack(fill="both", expand=True, pady=(0, 12))
+        self.buyer_count_label = ttk.Label(tab, text="", style="Muted.TLabel")
+        self.buyer_count_label.pack(anchor="e", pady=(0, 3))
+        self.buyer_grid = tk.Frame(tab, bg=PAPER)
+        self.buyer_grid.pack(fill="both", expand=True, pady=(0, 12))
+        for column in range(3):
+            self.buyer_grid.grid_columnconfigure(column, weight=1, uniform="product-card")
+        for row in range(2):
+            self.buyer_grid.grid_rowconfigure(row, weight=1)
         actions = ttk.Frame(tab, style="Panel.TFrame")
         actions.pack(fill="x")
         ttk.Button(actions, text="预约选中商品", style="Primary.TButton", command=self._reserve_selected).pack(side="left", padx=(0, 8))
@@ -94,16 +106,50 @@ class Workspace(ttk.Frame):
         except ServiceError as exc:
             messagebox.showerror("查询失败", str(exc), parent=self)
             return
-        self.buyer_list.delete(0, tk.END)
-        for product in products:
-            self.buyer_list.insert(tk.END, f"{product.product_id} | {product.title} | ¥{product.price} | {product.status.value}")
+        self._render_product_cards(products)
+
+    def _clear_buyer_cards(self) -> None:
+        for child in self.buyer_grid.winfo_children():
+            child.destroy()
+        self.selected_product_id = None
+        self.selected_card = None
+
+    def _render_product_cards(self, products) -> None:
+        self._clear_buyer_cards()
+        self.buyer_count_label.configure(text=f"共 {len(products)} 件商品")
+        colors = ("#dfeaff", "#ffecd4", "#e2f7f1", "#f0e7ff", "#e5f0ff", "#fff1d6")
+        for index, product in enumerate(products):
+            row, column = divmod(index, 3)
+            panel = tk.Frame(self.buyer_grid, bg=PAPER, highlightbackground=LINE, highlightthickness=1, bd=0, cursor="hand2")
+            panel.grid(row=row, column=column, sticky="nsew", padx=7, pady=7)
+            art = tk.Frame(panel, bg=colors[index % len(colors)], height=64)
+            art.pack(fill="x", padx=12, pady=(12, 7))
+            art.pack_propagate(False)
+            tk.Label(art, text=product.category or "校园好物", bg=colors[index % len(colors)], fg=NAVY, font=("Microsoft YaHei UI", 13, "bold")).pack(expand=True)
+            tk.Label(panel, text=product.title, bg=PAPER, fg=TEXT, anchor="w", font=("Microsoft YaHei UI", 11, "bold")).pack(fill="x", padx=14, pady=(3, 2))
+            info = tk.Frame(panel, bg=PAPER)
+            info.pack(fill="x", padx=14, pady=(0, 12))
+            tk.Label(info, text=f"¥ {product.price}", bg=PAPER, fg=BLUE, font=("Microsoft YaHei UI", 13, "bold")).pack(side="left")
+            tk.Label(info, text=f"{product.condition} · {product.status.value}", bg=PAPER, fg=MUTED, font=("Microsoft YaHei UI", 8)).pack(side="right")
+            self._bind_product_card(panel, product)
+
+    def _bind_product_card(self, widget: tk.Misc, product) -> None:
+        widget.bind("<Button-1>", lambda _event, item=product, panel=widget: self._select_product(item, panel))
+        for child in widget.winfo_children():
+            self._bind_product_card(child, product)
+
+    def _select_product(self, product, panel: tk.Misc) -> None:
+        if self.selected_card is not None:
+            self.selected_card.configure(highlightbackground=LINE, highlightthickness=1)
+        self.selected_product_id = product.product_id
+        self.selected_card = panel
+        panel.configure(highlightbackground=BLUE, highlightthickness=2)
 
     def _reserve_selected(self) -> None:
-        selection = self.buyer_list.curselection()
-        if not selection:
+        if not self.selected_product_id:
             messagebox.showinfo("提示", "请先选择商品", parent=self)
             return
-        product_id = self.buyer_list.get(selection[0]).split(" | ", 1)[0]
+        product_id = self.selected_product_id
         try:
             reservation = self.services["trade"].reserve(self.user.user_id, product_id, f"ui-reserve-{product_id}-{self.user.user_id}")
         except ServiceError as exc:
@@ -117,9 +163,15 @@ class Workspace(ttk.Frame):
         except ServiceError as exc:
             messagebox.showerror("读取失败", str(exc), parent=self)
             return
-        self.buyer_list.delete(0, tk.END)
-        for item in reservations:
-            self.buyer_list.insert(tk.END, f"预约 {item.reservation_id} | 商品 {item.product_id} | {item.status.value}")
+        self._clear_buyer_cards()
+        self.buyer_count_label.configure(text=f"共 {len(reservations)} 条预约")
+        for index, item in enumerate(reservations):
+            row, column = divmod(index, 3)
+            panel = tk.Frame(self.buyer_grid, bg=PAPER, highlightbackground=LINE, highlightthickness=1, bd=0)
+            panel.grid(row=row, column=column, sticky="nsew", padx=7, pady=7)
+            tk.Label(panel, text="我的预约", bg=SOFT_BLUE, fg=BLUE, font=("Microsoft YaHei UI", 10, "bold"), padx=10, pady=8).pack(fill="x", padx=12, pady=(12, 10))
+            tk.Label(panel, text=f"商品 {item.product_id[:12]}", bg=PAPER, fg=TEXT, font=("Microsoft YaHei UI", 10, "bold")).pack(anchor="w", padx=14)
+            tk.Label(panel, text=f"预约状态 · {item.status.value}", bg=PAPER, fg=MUTED, font=("Microsoft YaHei UI", 9)).pack(anchor="w", padx=14, pady=(5, 14))
 
     def _build_seller(self) -> None:
         tab = ttk.Frame(self.notebook, style="Panel.TFrame", padding=22)
