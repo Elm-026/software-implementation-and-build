@@ -30,8 +30,8 @@ class LoginView(ttk.Frame):
         ttk.Entry(self, textvariable=self.email, width=34).grid(row=1, column=1, sticky="ew", pady=5)
         ttk.Label(self, text="密码").grid(row=2, column=0, sticky="w", pady=5)
         ttk.Entry(self, textvariable=self.password, show="*", width=34).grid(row=2, column=1, sticky="ew", pady=5)
-        ttk.Label(self, text="注册角色").grid(row=3, column=0, sticky="w", pady=5)
-        ttk.Combobox(self, textvariable=self.role, values=[role.value for role in Role], state="readonly", width=31).grid(row=3, column=1, sticky="ew", pady=5)
+        ttk.Label(self, text="账号类型").grid(row=3, column=0, sticky="w", pady=5)
+        ttk.Combobox(self, textvariable=self.role, values=[Role.BUYER.value, Role.ADMIN.value], state="readonly", width=31).grid(row=3, column=1, sticky="ew", pady=5)
         ttk.Label(self, text="显示名称").grid(row=4, column=0, sticky="w", pady=5)
         ttk.Entry(self, textvariable=self.display_name, width=34).grid(row=4, column=1, sticky="ew", pady=5)
         ttk.Label(self, text="联系方式").grid(row=5, column=0, sticky="w", pady=5)
@@ -40,7 +40,7 @@ class LoginView(ttk.Frame):
         buttons.grid(row=6, column=0, columnspan=2, pady=(18, 0))
         ttk.Button(buttons, text="登录", command=self._login).pack(side="left", padx=5)
         ttk.Button(buttons, text="注册并登录", command=self._register).pack(side="left", padx=5)
-        ttk.Label(self, text="管理员账户需要通过数据库初始化或已有管理员注册信息使用。", foreground="#666666").grid(row=7, column=0, columnspan=2, pady=(18, 0))
+        ttk.Label(self, text="普通账号可同时买卖，管理员账号用于审核和系统管理。", foreground="#666666").grid(row=7, column=0, columnspan=2, pady=(18, 0))
 
     def _login(self) -> None:
         try:

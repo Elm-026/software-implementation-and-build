@@ -156,9 +156,9 @@ class ProductService(BaseService):
     def unlist(self, actor_id: str, product_id: str, expected_version: int, reason: str = "") -> Product:
         actor = self.user(actor_id)
         product = self.get(product_id)
-        if actor.role == Role.SELLER and product.seller_id != actor_id:
+        if actor.role != Role.ADMIN and product.seller_id != actor_id:
             raise PermissionDenied("不能下架其他卖家的商品")
-        if actor.role not in (Role.SELLER, Role.ADMIN):
+        if actor.role not in (Role.BUYER, Role.SELLER, Role.ADMIN):
             raise PermissionDenied("当前角色不能下架商品")
         if product.status not in (ProductStatus.PUBLISHED, ProductStatus.REJECTED):
             raise ConflictError("当前商品状态不能下架")

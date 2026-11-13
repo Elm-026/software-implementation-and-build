@@ -29,11 +29,9 @@ class Workspace(ttk.Frame):
         ttk.Button(header, text="退出登录", command=self.on_logout).pack(side="right")
         self.notebook = ttk.Notebook(self)
         self.notebook.pack(fill="both", expand=True)
-        if self.user.role == Role.BUYER:
-            self._build_buyer()
-        elif self.user.role == Role.SELLER:
-            self._build_seller()
-        else:
+        self._build_buyer()
+        self._build_seller()
+        if self.user.role == Role.ADMIN:
             self._build_admin()
 
     def _build_buyer(self) -> None:

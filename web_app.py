@@ -72,6 +72,8 @@ def _user_json(user) -> dict[str, Any]:
         "role": user.role.value,
         "display_name": user.display_name,
         "phone": user.phone,
+        "is_active": user.is_active,
+        "created_at": user.created_at,
     }
 
 
@@ -352,8 +354,12 @@ class CampusRequestHandler(BaseHTTPRequestHandler):
     def _require_user(self, *roles: Role):
         token = self._token()
         user = self.services.auth.authenticate(token)
-        if roles and user.role not in roles:
-            raise PermissionDenied("当前角色无权执行该操作")
+        if roles:
+            requested = set(roles)
+            is_trade_capability = bool(requested & {Role.BUYER, Role.SELLER}) and Role.ADMIN not in requested
+            allowed = user.role in requested or (is_trade_capability and user.role in {Role.BUYER, Role.SELLER, Role.ADMIN})
+            if not allowed:
+                raise PermissionDenied("当前账号无权执行该操作")
         return user
 
     def _token(self) -> str:

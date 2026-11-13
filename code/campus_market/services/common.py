@@ -108,7 +108,10 @@ class BaseService:
 
     def require_role(self, user_id: str, *roles: Role) -> User:
         actor = self.user(user_id)
-        if actor.role not in roles:
+        requested = set(roles)
+        is_trade_capability = bool(requested & {Role.BUYER, Role.SELLER}) and Role.ADMIN not in requested
+        allowed = actor.role in requested or (is_trade_capability and actor.role in {Role.BUYER, Role.SELLER, Role.ADMIN})
+        if not allowed:
             names = ", ".join(role.value for role in roles)
             raise PermissionDenied(f"需要角色 {names}")
         return actor
