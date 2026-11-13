@@ -8,6 +8,7 @@ from pathlib import Path
 from campus_market.infra import Database
 from campus_market.services import AuthService, AuditService, ProductService, ReviewService, StatisticsService, TradeService
 from campus_market.ui import LoginView, Workspace
+from campus_market.ui.theme import configure
 
 
 class CampusMarketApp(tk.Tk):
@@ -16,8 +17,9 @@ class CampusMarketApp(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
         self.title("校园二手交易系统")
-        self.geometry("900x620")
-        self.minsize(760, 520)
+        configure(self)
+        self.geometry("1180x760")
+        self.minsize(980, 650)
         database_path = Path(__file__).resolve().parent.parent / "campus_market.sqlite3"
         self.database = Database(database_path)
         self.services = {
