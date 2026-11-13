@@ -47,7 +47,8 @@ from campus_market.utils.validation import parse_price, validate_price_range
 
 
 WEB_ROOT = PROJECT_ROOT / "web"
-DATABASE_PATH = PROJECT_ROOT / "code" / "campus_market.sqlite3"
+# Keep the Web and desktop entry points on the same project database.
+DATABASE_PATH = PROJECT_ROOT / "campus_market.sqlite3"
 
 
 class AppServices:

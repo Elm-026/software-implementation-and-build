@@ -24,6 +24,8 @@ python web_app.py
 
 Web 端支持游客浏览商品、搜索筛选和查看详情；预约购买或发布闲置时再登录或注册。
 
+管理员账号请从桌面端注册。运行 `python code/app.py`，在登录窗口将“注册角色”选择为 `ADMIN`，填写邮箱和密码后点击“注册并登录”。桌面端和 Web 端共用项目根目录下的 `campus_market.sqlite3` 数据库。
+
 ## 测试
 
 ```powershell
